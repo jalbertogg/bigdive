@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+    
+    <script>
+        d3.select('body')
+            .append('svg')
+            .attr('width', 120000)
+            .attr('height', 20000)
+        
+        d3.csv('populations.csv', function(data){
+            
+            console.log(data)
+            
+            data.sort(function(a, b){
+                return d3.ascending(+a['1960'], +b['1960'])
+            })
+            
+            var svg = d3.select('svg')
+            
+            line = svg.selectAll('rect')
+                .data(data)
+                .enter()
+                .append('g')
+            
+            d3.selectAll('g')
+                .append('text')
+                .text(function(d, i){
+                    return d['Country Code']
+                })
+                .attr('y', function(d, i){
+                    return i*20;
+                })
+            
+            d3.selectAll('g')
+                .append('rect')
+                .attr('x', 50)
+                .attr('y', function(d, i){
+                    return i*20;
+                })
+                .attr('height', 10)
+                .attr('width', 0)
+                .transition()
+                .duration(5000)
+                .delay(1000)
+                .attr('width', function(d, i){
+                    return d['1960']/10000
+                })
+        });
+        
+    </script>
+
+    </body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+    
+    <script>
+        d3.select('body')
+            .append('svg')
+            .attr('width', 2000)
+            .attr('height', 2000)
+        
+        d3.csv('populations.csv', function(data){
+            
+            console.log(data)
+            
+            data.sort(function(a, b){
+                return d3.ascending(+a['1960'], +b['1960'])
+            })
+            
+            var svg = d3.select('svg')
+            
+            svg.selectAll('rect')
+                .data(data)
+                .enter()
+                .append('rect')
+                .attr('y', function(d, i){
+                    return i*5;
+                })
+                .attr('height', 1)
+                .attr('width', function(d, i){
+                    return d['1960']/100000
+                })
+        });
+        
+    </script>
+
+    </body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+    
+    <script>
+        d3.select('body')
+            .append('svg')
+            .attr('width', 500)
+            .attr('height',500)
+        
+        var svg = d3.select('svg')
+        
+        var myG1= svg.append('g')
+            .attr('transform', 'translate(0,30)')
+        myG1.append('rect')
+            .attr('width', 100)
+            .attr('height', 100)
+            .attr('y', 5)
+        myG1.append('text')
+            .text('1')
+        
+        myG2 = svg.append('g')
+        .attr('transform', 'translate(110,30)')
+        myG2.append('rect')
+            .attr('width', 100)
+            .attr('height', 100)
+            .attr('y', 5)
+        myG2.append('text')
+            .text('2')
+        
+        myG3 = svg.append('g')
+        .attr('transform', 'translate(220,30)')
+        myG3.append('rect')
+            .attr('width', 100)
+            .attr('height', 100)
+            .attr('y', 5)
+        myG3.append('text')
+            .text('3')
+        
+        
+    </script>
+    
+</body>
+</html>

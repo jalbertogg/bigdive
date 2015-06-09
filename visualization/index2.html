@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+
+    <script>
+        d3.select('body')
+            .append('svg')
+                  
+        d3.select('svg')
+            .attr('width', 300)
+            .attr('height', 300)
+            .append('rect') //append means a selection
+            .attr('height', 0)
+            .attr('fill', 'green')
+            .attr('y', 200)
+            .transition() //from state of the atribute set before to the new set value
+            .duration(5000)
+            .delay(1000)
+            .attr('height', 200)
+            .attr('fill', 'red')
+            .attr('y', 0)
+        
+        d3.select('svg')
+            .append('rect') //append means a selection
+            .attr('height', 0)
+            .attr('fill', 'blue')
+            .attr('x', 55)
+            .attr('y', 200)
+            .transition() //from state of the atribute set before to the new set value
+            .duration(5000)
+            .delay(1000)
+            .attr('height', 150)
+            .attr('y', 50)
+        
+        d3.select('svg')
+            .append('rect') //append means a selection
+            .attr('height', 0)
+            .attr('fill', 'orange')
+            .attr('x', 110)
+            .attr('y', 200)
+            .transition() //from state of the atribute set before to the new set value
+            .duration(5000)
+            .delay(1000)
+            .attr('height', 100)
+            .attr('y', 100)
+        
+        d3.selectAll('rect')
+            .attr('width', 50)
+    </script>
+    
+</body>
+</html>
