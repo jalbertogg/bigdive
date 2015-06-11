@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+    
+    <svg width="500" height="500"></svg>
+    
+    <script>
+    
+        d3.csv("athletes_sochi.csv", function(db){
+            
+            console.log(db)
+            
+            var w = 2000
+            var h = 1000
+
+            
+            var svg = d3.select('svg')
+                .attr('width', w)
+                .attr('height', h+100)
+            
+            //create a database by sport
+            var sports = d3.nest()
+                .key(function(d){
+                    return d.sport 
+                })
+                .entries(db)
+            
+            console.log(sports)
+            
+            
+            //maxParticipants and maxSports
+            var maxParticipants = d3.max(sports, function(d){
+                return d.values.length;
+            })
+                
+            var maxSports = sports.length
+            
+            console.log("MaxParticipants", maxParticipants)
+            console.log("MaxSports", maxSports)
+
+            /*  
+            //create a scale line
+            var scaleY = d3.scale.linear()
+                .domain([0, maxParticipants])
+                .range([h, 0])
+            
+            var scaleX = d3.scale.linear()
+                .domain([0, maxSports])
+                .range([0, w])
+            */
+                    
+            var column_width = w / maxSports
+            var row_height = h / maxParticipants
+            
+            console.log('row_height', row_height)
+            console.log('column_width', column_width)
+            
+            var groups = svg.selectAll('g')
+                .data(sports)
+                .enter()
+                .append('g')
+                .attr('transform', function(d, i){
+                    return 'translate(' + (column_width*i) + ', 0)'
+                })
+            
+            groups.append('rect')
+                .style('fill', '#f2f2f2')
+                .attr('width', column_width - 4)
+                .attr('height', function(d, i){
+                    return d.values.length * row_height;
+                })
+                .attr('y', function(d, i){
+                    return h - d.values.length * row_height;
+                })
+            
+            
+            groups.selectAll('.myAthletes')
+                .data(function(d){
+                    return d.values
+                })
+                .enter()
+                .append('rect')
+                .attr('class', 'myAthletes')
+                .attr('width', column_width - 4)
+                .attr('height', row_height - 1)
+                .attr('y', function(d,i){
+                    return h - row_height - row_height * i
+                })
+            
+            
+            groups.append('text')
+                .text(function(d){
+                    return d.key
+                })
+                .attr('y', h + 16)
+                .attr('x', 4)
+                
+                
+            
+        })
+        
+    </script>
+
+</body>
+</html>

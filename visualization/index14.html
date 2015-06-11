@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Untitled Document</title>
+        <meta charset="UTF-8">
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+
+        <script src="d3.min.js"></script>
+    </head>
+    <body>
+
+        <svg height="2000" width="500"></svg>
+
+        <script>
+
+            d3.csv("athletes_sochi.csv", function(db){
+
+                console.log(db)
+
+                //function created to sum medals
+                function makeSum(d, key){
+                    return d3.sum(d, function(c){
+                        return +c[key];
+                    })
+                }
+
+                //create a new dataset
+                var countries = d3.nest()
+                .key(function(d){
+                    return d.country
+                })
+                .rollup(function(d){
+                    return {
+                        gold_medals: makeSum(d,'gold_medals'),
+                        silver_medals:makeSum(d,'silver_medals'),
+                        bronze_medals:makeSum(d,'bronze_medals')
+                    }
+                })
+                .entries(db)
+
+                //sort the countries
+                countries.sort(function(a, b){
+                    return d3.descending(a.values.gold_medals, b.values.gold_medals)
+                })
+
+                console.log("Countries: ", countries)
+
+                var svg = d3.select('svg')
+
+                //scale the vertical position
+                var scaleY = d3.scale.linear()
+                    .domain([0, countries.length])
+                    .range([10, 2000])
+
+                var groups = svg.selectAll('g')
+                    .data(countries)
+                    .enter()
+                    .append('g')
+                    //group alement dowsn't have y,x atributes
+                    .attr('transform', function(d, i){
+                        return 'translate(0, ' + scaleY(i) + ')'
+                    })
+
+                //show the groups array
+                // console.log(groups)
+
+                //building the the structure of groups
+                groups.append('rect')
+                    .attr('width', 0)
+                    .transition()
+                    .duration(1000)
+                    .attr('width', function(d, i){
+                        return d.values.gold_medals;
+                    })
+                    .attr('height', 5)
+
+                groups.append('text')
+                    .text(function(d){
+                        return 2+d.values.gold_medals;
+                    })
+                    .attr('x', function(d, i){
+                        return d.values.gold_medals + 8;
+                    })
+                    .attr('y', 5)
+                    .style('font-size', 12)
+                    .style('font-family', 'sans-serif')
+                
+                groups.append('text')
+                    .text(function(d){
+                        return d.key;
+                    })
+                    .attr('x', function(d, i){
+                        return d.values.gold_medals + 24 + 8;
+                    })
+                    .attr('y', 5)
+                    .style('font-size', 12)
+                    .style('font-family', 'sans-serif')
+
+            });
+
+
+
+        </script>
+
+
+    </body>
+</html>

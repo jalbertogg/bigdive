@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+    
+    <script>
+        d3.csv('athletes_sochi.csv',function(pippo){
+            //'+' character converts in number the data    
+            pippo.forEach(function(d){
+                d.weight = +d.weight;
+                d.age = +d.age;
+                d.height = +d.height;
+            });
+            
+            console.log(pippo)
+            
+            //discover the maximum value in the data to use in the .domain range in the scale process
+            var maxAge= d3.max(pippo, function(d){
+                return d.age;
+            });
+            
+            var minAge= d3.min(pippo, function(d){
+                return d.age;
+            });
+            
+            var maxHeight= d3.max(pippo, function(d){
+                return d.height;
+            });
+            
+            var minHeight= d3.min(pippo, function(d){
+                return d.height;
+            });
+            
+            var maxWeight= d3.max(pippo, function(d){
+                return d.weight;
+            });
+            
+            var minWeight= d3.min(pippo, function(d){
+                return d.weight;
+            });
+            
+            
+            var scaleXAge = d3.scale.linear()
+                .domain([minAge, maxAge])    //change the scale to pixels
+                .range([0, 2000])   //the height of the svg
+            
+            var scaleYHeight = d3.scale.linear()
+                .domain([minHeight,maxHeight])
+                .range([0, 2000])
+            
+            var scaleRWeight = d3.scale.linear()
+                .domain([minWeight,maxWeight])
+                .range([5, 30])
+            
+            //show by console the variables
+            console.log("Min age= " + minAge)
+            console.log("Max age= " + maxAge)
+            console.log("Min weight= " + minHeight)
+            console.log("Max weight= " + maxHeight)
+            
+            //creating the lines with age and weight data
+            d3.select('body')
+                .append('svg')
+                .attr('height', scaleYHeight(maxHeight))
+                .attr('width', scaleXAge(maxAge))
+            
+            //creating the circles
+            d3.select('svg')
+                .selectAll('circle')
+                .data(pippo)
+                .enter()
+                .append('circle')
+                .attr('r', function(d, i){
+                    return scaleRWeight(d.weight)  
+                })
+                .attr('cx', function(d, i){
+                    return scaleXAge(d.age);
+                })
+                .attr('cy', function(d, i){
+                    return scaleYHeight(d.height);
+                })
+                .attr('fill', function(d, i){
+                    if(d.gold_medals > 0){
+                        return 'gold'}
+                    else if(d.silver_medals > 0){
+                        return 'silver'
+                    }
+                    else if(d.bronze_medals > 0){
+                        return 'brown'
+                    }
+                })                
+                .attr('opacity', function(d, i){
+                    if(d.total_medals > 0){
+                        return 1 }
+                    else{
+                        return 0 }
+                })
+        });
+    </script>
+</body>
+</html>

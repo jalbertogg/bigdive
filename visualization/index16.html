@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+    
+    <svg width="10000" height="800"></svg>
+    
+    <script>
+        d3.csv("athletes_sochi.csv",function(db){
+            console.log(db)
+            
+            //function created to sum medals
+                function makeSum(d, key){
+                    return d3.sum(d, function(c){
+                        return +c[key];
+                    })
+                }
+            
+            //create a database of countries
+            var countries = d3.nest()
+                .key(function(d){
+                    return d.country
+                })
+                .rollup(function(d){
+                    return {
+                        gold_medals: makeSum(d,'gold_medals'),
+                        silver_medals: makeSum(d,'silver_medals'),
+                        bronze_medals: makeSum(d,'bronze_medals')
+                    }
+                })
+                .entries(db)
+            
+            //know the maximun number of gold_medals
+            var maxMedals= d3.max(countries, function(d){
+                return d.values.gold_medals;
+            });
+            
+            //scale the X axis
+            var scaleX = d3.scale.linear()
+                .domain([0, countries.length])
+                .range([0, 10000])
+            
+            //scale the Y axis
+            var scaleY = d3.scale.linear()
+                .domain([0, maxMedals])
+                .range([0, 700])
+
+            var lineGenerator = d3.svg.line()
+                .x(function(d, i){
+                    return scaleX(i);
+                })
+                .y(function(d){
+                    return scaleY(d.values.gold_medals);
+                })
+                .interpolate('basis')
+            
+            //countries.unshift({key:'fake', values:[]})
+            
+            var svg = d3.select('svg')
+                
+            svg.append('path')
+                .attr('d', lineGenerator(countries))
+                .style('fill', 'none')
+                .style('stroke', 'purple')
+            
+            var listOfCountries = svg.selectAll('g')
+                .data(countries)
+                .enter()
+                .append('g')
+                
+            listOfCountries.append('text')
+                .text(function(d){
+                    return d.key
+                })
+                .attr('x', function(d, i){
+                    return scaleX(i)
+                })
+                .attr('y', 600)
+            
+            listOfCountries.append('text')
+                .text(function(d){
+                    return d.values.gold_medals
+                })
+                .attr('x', function(d, i){
+                    return scaleX(i)
+                })
+                .attr('y', function(d, i){
+                    return scaleY(d.values.gold_medals)
+                })
+            
+            
+            
+        })
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+    
+    <svg></svg>
+    <div style="float: left">
+        <button id="gold_button">Gold</button>
+        <button id="silver_button">Silver</button>
+        <button id="bronze_button">Bronze</button>
+    </div>
+    
+    <script>
+        d3.csv("athletes_sochi.csv", function(data){
+            
+            var w = 500
+            var h = 400
+            
+            console.log(data)
+            
+            var minAge = d3.min(data, function(d){
+                return d.age;
+            })
+            
+            var maxAge = d3.max(data, function(d){
+                return d.age;  
+            })
+            
+            //d3.extend do the same array with max and min values
+            var scaleX = d3.scale.linear()
+                .domain([minAge,maxAge])
+                .range([0, w])
+            
+            var minmaxHeight = d3.extent(data, function(d){
+                return d.height;
+            })
+            
+            var scaleY = d3.scale.linear()
+                .domain(minmaxHeight)
+                .range([h, 0])
+            
+            var svg = d3.select('svg')
+                .attr('width', w)
+                .attr('heigth', h)
+                
+            var circles = svg.selectAll('circle')
+                .data(data)
+                .enter()
+                .append('circle')
+                .attr('cx', function(d, i){
+                    return scaleX(d.age)
+                })
+                .attr('cy', function(d, i){
+                    return scaleY(d.height)
+                })
+                .attr('r', 6)
+                .style('opacity', .03)
+            
+            d3.selectAll('button')
+                .on('click', function(){
+                    var idbtn = d3.select(this).attr('id')
+                    console.log('it works', idbtn)
+                    
+                    circles.transition()
+                        .attr('r', 1)
+                        .filter(function(d){
+                                if(idbtn == 'gold_button'){
+                                    return d.gold_medals > 0;
+                                }
+                                else if (idbtn == 'silver_button'){
+                                    return d.silver_medals > 0;
+                                }
+                                else if (idbtn == 'bronze_button'){
+                                    return d.bronze_medals > 0;
+                                }
+                        })
+                        .transition()
+                        .attr('r', 6)
+                })
+            
+            
+        })
+    </script>
+
+</body>
+</html>

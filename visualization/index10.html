@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+    
+    
+    <script>
+                                
+    d3.csv('athletes_sochi.csv',function(pippo){
+        //'+' character converts in number the data    
+            pippo.forEach(function(d){
+                d.weight = +d.weight;
+            });
+        
+            console.log(pippo)
+            
+            //discover the maximum value in the data to use in the .domain range in the scale process
+            var maxAge= d3.max(pippo, function(d){
+                return d.age;
+            });
+            
+            var minAge= d3.min(pippo, function(d){
+                return d.age;
+            });
+            
+            var maxWeight= d3.max(pippo, function(d){
+                return d.weight;
+            });
+            
+            var minWeight= d3.min(pippo, function(d){
+                return d.weight;
+            });
+            
+            
+            var scaleYAge = d3.scale.linear()
+                .domain([minAge, maxAge])    //change the scale to pixels
+                .range([0, 1000])   //the height of the svg
+            
+            var scaleYWeight = d3.scale.linear()
+                .domain([minWeight,maxWeight])
+                .range([0,1000])
+            
+            //show by console the variables
+            console.log("Min age= " + minAge)
+            console.log("Max age= " + maxAge)
+            console.log("Min weight= " + minWeight)
+            console.log("Max weight= " + maxWeight)
+            
+            //creating the lines with age and weight data
+            d3.select('body')
+                .append('svg')
+                .attr('height', scaleYWeight(maxWeight))
+                .attr('width', 600)
+            
+            d3.select('svg')
+                .selectAll('line')
+                .data(pippo)
+                .enter()
+                .append('line')
+                .style('opacity', .05)
+                .attr('x1', 50)
+                .attr('y1', function(d, i){
+                    return scaleYAge(d.age) //use the age to change the height of the first point of the line scaled proprerly according to pixel
+                })
+                .attr('x2', 500)
+                .attr('y2', function(d, i){
+                    return scaleYWeight(d.weight)
+                })
+                .attr('stroke', 'black')
+        });
+        
+            //showing the text data of age
+            d3.select('svg')
+                .selectAll('text')
+                .data(pippo)
+                .enter()
+                .append('text')
+    </script>
+</body>
+</html>

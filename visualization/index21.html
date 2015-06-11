@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+    
+    <h2 class="title_label">All participants organized by sport</h2>
+    <svg width="500" height="500"></svg>
+    
+    <script>
+    
+        d3.csv("athletes_sochi.csv", function(db){
+            
+            console.log(db)
+            
+            //Set the variables for the canvas
+            var w = 1800
+            var h = 500
+
+            //Set the dimension of the svg
+            var svg = d3.select('svg')
+                .attr('width', w)
+                .attr('height', h+100)
+            
+            //create a database by sport
+            var sports = d3.nest()
+                .key(function(d){
+                    return d.sport 
+                })
+                .entries(db)
+            
+            //sort participants of each sport group by country
+            sports.forEach(function(d){
+                d.values.sort(function(a,b){
+                    return d3.ascending(a.country,b.country);
+                })
+            })
+                
+            
+            console.log(sports)
+            
+            
+            //maxParticipants and maxSports
+            var maxParticipants = d3.max(sports, function(d){
+                return d.values.length;
+            })
+                
+            var maxSports = sports.length
+            
+            console.log("MaxParticipants", maxParticipants)
+            console.log("MaxSports", maxSports)
+            
+            //Calculate the width of the columns and the rows height
+            var column_width = w / maxSports
+            var row_height = h / maxParticipants
+            
+            console.log('row_height', row_height)
+            console.log('column_width', column_width)
+            
+            //create a group element for each sport data set
+            var groups = svg.selectAll('g')
+                .data(sports)
+                .enter()
+                .append('g')
+                .attr('transform', function(d, i){
+                    return 'translate(' + (column_width*i) + ', 0)'
+                })
+            
+            //Add a rectangle in the group with the dimension of all participants
+            groups.append('rect')
+                .style('fill', '#f2f2f2')
+                .attr('width', column_width - 4)
+                .attr('height', function(d, i){
+                    return d.values.length * row_height;
+                })
+                .attr('y', function(d, i){
+                    return h - d.values.length * row_height;
+                })
+            
+            //create a rectabngle for each participant in a group
+            groups.selectAll('.myAthletes')
+                .data(function(d){
+                    return d.values
+                })
+                .enter()
+                .append('rect')
+                .attr('class', 'myAthletes')
+                .attr('width', column_width - 4)
+                .attr('height', row_height - 1)
+                .attr('y', function(d,i){
+                    return h - row_height - row_height * i
+                })
+            
+            //show the labels            
+            //The sport name
+            groups.append('text')
+                .text(function(d){
+                    return d.key
+                })
+                .attr('y', h + 16)
+                .attr('x', 4)
+                .attr('class', 'sportName')
+            
+            //the total of participant for this sport group
+            groups.append('text')
+                .text(function(d){
+                    return 2+d.values.length
+                })
+                .attr('y', h + 36)
+                .attr('x', 4)
+                .attr('class', 'total_participants')
+             
+            //Create a database of countries that exist in the dataset
+            var countries = d3.nest()
+                .key(function(d){
+                    return d.country
+                })
+                .entries(db)
+            
+            console.log(countries)
+            
+            //Interactions
+            //Create a button to show all participants
+            d3.select('body')
+                .append('button')
+                .style('width', '150px')
+                .style('height', '37px')
+                .style('margin', '4px')
+                .text('All participants')
+                .attr('title', 'All participants')
+                .attr('class','.all_participants_button')
+                .style('display','block')
+            
+            //Create a button for each country
+            d3.select('body')
+                .selectAll('button')
+                .data(countries)
+                .enter()
+                .append('button')
+                .style('width', '150px')
+                .style('height', '37px')
+                .style('margin', '4px')
+                .text(function(d){
+                    return d.key;
+                })
+                .attr('title', function(d){
+                    return d.key;
+                })
+                .attr('x', function(d,i){
+                    return i*108
+                })
+                .attr('class','.country_button')
+            
+            console.log(countries)
+            
+            //Function to sum the quantity of participants of a country
+            function sum_participants_country(d,country){
+                    var count = 0
+                    for(i=0; i < d.length ; i++){
+                        if(d[i].country == country){
+                            count += 1
+                        }
+                    }
+                    return count
+            }
+            
+            //Clicks functions to highlight participants of selected country
+            var buttons = d3.selectAll('button')
+                .on('click', function(d){
+                    var selected_btn = d3.select(this)
+                    var class_btn = selected_btn.attr('class')
+                    if(class_btn == '.country_button'){
+                        //select all athletes of this country
+                        var athletes = d3.selectAll('.myAthletes')
+                        var athletes_this_country = athletes.filter(function(d){
+                                return selected_btn.text() == d.country
+                            })
+                        
+                        d3.select('.title_label')
+                            .text('All participants from ' + selected_btn.text() + ' organized by sport')
+                        
+                        groups.select('.total_participants')
+                            .text(function(d){
+                                return sum_participants_country(d.values,selected_btn.text()) + '/' + d.values.length
+                            }) 
+                            console.log(sum_participants_country(d,selected_btn.text()))
+                        
+                        
+                        athletes.transition()
+                            .duration(3000)
+                            .style('opacity', 0)
+                            
+                        
+                        athletes_this_country.transition()
+                            .duration(1000)
+                            .style('opacity', 1)
+                            .style('fill', 'blue')
+                        
+                        
+                    }
+                    else if(class_btn == '.all_participants_button'){
+                        d3.select('.title_label')
+                            .text('All participants organized by sport')
+                        
+                        d3.selectAll('.totalParticipants')
+                            .text(function(d){
+                                return d.values.length
+                            })
+                        
+                        d3.selectAll('.myAthletes')
+                            .transition()
+                            .duration(2000)
+                            .style('opacity', 1)
+                            .style('fill','black')
+                        
+                        groups.select('.total_participants')
+                            .text(function(d){
+                                return d.values.length
+                            })
+                    }
+                })
+            
+        })
+        
+    </script>
+
+</body>
+</html>

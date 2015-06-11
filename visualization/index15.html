@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Untitled Document</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <script src="d3.min.js"></script>
+</head>
+<body>
+    <svg width="600"></svg>
+    
+    <script>
+        
+        var data = d3.range(100).map(function(d){
+            return {value:Math.random()}
+        })
+        
+        var scaleX = d3.scale.linear()
+            .domain([0, data.length])
+            .range([0, 600])
+        
+        var lineGenerator = d3.svg.line()
+            .x(function(d, i){
+                return scaleX(i);
+            })
+            .y(function(d){
+                return d.value*100;
+            })
+            .interpolate('basis')
+        
+        d3.select('svg')
+            .append('path')
+            .attr('d', lineGenerator(data))
+            .style('fill', 'none')
+            .style('stroke', 'purple')
+        
+    </script>
+</body>
+</html>
