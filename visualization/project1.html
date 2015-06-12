@@ -11,6 +11,13 @@
 <body>
     <script>
         
+        function sumMedals(d, key){
+                
+               return d3.sum(d, function(c){
+                   return +c[key]
+               })
+        }
+        
         d3.csv('olympics_2012.csv', function(olympics){
             
             console.log(olympics)
@@ -25,6 +32,7 @@
                 .key(function(d){
                     return d.Sport;
                 })
+<<<<<<< HEAD
                 /*
                 .key(function(d){
                     return d.Event;
@@ -34,6 +42,16 @@
                         gold_medals:sumMedals(d,'Gold'),
                         silver_medals:sumMedals(d, 'Silver'),
                         bronze_medals:sumMedals(d,'Bronze')
+=======
+                /*.key(function(d){
+                    return d.Event;
+                })*/
+                .rollup(function(d){
+                    return {
+                        gold_medals:sumMedals(d, 'Gold'),
+                        silver_medals:sumMedals(d, 'Silver'),
+                        bronze_medals:sumMedals(d, 'Bronze'),
+>>>>>>> 91a5e45c9818dabb81489bb3d4e8ce64a2e5a9d2
                     }
                 })
                 .entries(olympics)
