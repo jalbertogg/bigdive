@@ -11,10 +11,18 @@
 <body>
     <script>
         
-        d3.csv('olympics_2012.csv', function(olimpics){
+        d3.csv('olympics_2012.csv', function(olympics){
             
             console.log(olympics)
             
+            var sport = d3.nest()
+                .key(function(d){
+                    return d.Sport;
+                })
+                .key(function(d){
+                    return d.Event;
+                })
+                .entries(olympics)
             
         })
         
