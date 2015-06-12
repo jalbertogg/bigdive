@@ -9,10 +9,11 @@
     <script src="d3.min.js"></script>
 </head>
 <body>
+    
+    
     <script>
         
         function sumMedals(d, key){
-                
                return d3.sum(d, function(c){
                    return +c[key]
                })
@@ -20,43 +21,206 @@
         
         d3.csv('olympics_2012.csv', function(olympics){
             
+            var h = 600
+            var w = 600
+            
+            var svg = d3.select('body').append('svg')
+                .attr('width', w)
+                .attr('height', h)
+            
             console.log(olympics)
             
+            olympics = olympics.filter(function(d){
+                return d.Weight != ''
+            })
+            
+            olympics.sort(function(a,b){
+                    return d3.ascending(a.Weight,b.Weight);
+                })
+            
             function sumMedals(d,key){
-                return d3.sum(function(c){
+                return d3.sum(d, function(c){
                     return +c[key]
                 })
             }
             
-            var sport = d3.nest()
+            //Create a data base for each sex and get maximun of Weight (x axis)
+            var WomanParticipants = olympics.filter(function(d){
+                return d.Sex == 'F'
+            })
+            
+            var maxWomanWeight = d3.max(WomanParticipants, function(d){
+                return +d.Weight 
+            })
+            
+            var MenParticipants = olympics.filter(function(d){
+                return d.Sex == 'M'
+            })
+            
+            var maxMenWeight = d3.max(MenParticipants, function(d){
+                return +d.Weight 
+            })
+            
+            
+            console.log('maxMenWeight: ',maxMenWeight)
+            console.log('maxWomanWeight: ',maxWomanWeight)            
+            
+            //Create a data base of sport for each sex
+            var weight_by_sport = d3.nest()
                 .key(function(d){
                     return d.Sport;
                 })
-<<<<<<< HEAD
-                /*
                 .key(function(d){
-                    return d.Event;
-                })*/
-                .rollup(function(d){
-                    return {             
-                        gold_medals:sumMedals(d,'Gold'),
-                        silver_medals:sumMedals(d, 'Silver'),
-                        bronze_medals:sumMedals(d,'Bronze')
-=======
-                /*.key(function(d){
-                    return d.Event;
-                })*/
+                    return +d.Weight;
+                })
                 .rollup(function(d){
                     return {
                         gold_medals:sumMedals(d, 'Gold'),
                         silver_medals:sumMedals(d, 'Silver'),
-                        bronze_medals:sumMedals(d, 'Bronze'),
->>>>>>> 91a5e45c9818dabb81489bb3d4e8ce64a2e5a9d2
+                        bronze_medals:sumMedals(d, 'Bronze')
                     }
                 })
-                .entries(olympics)
             
-            console.log(sport)
+            var MenSports = weight_by_sport.entries(MenParticipants)
+            var WomanSports = weight_by_sport.entries(WomanParticipants)
+            var AllSports = weight_by_sport.entries(olympics)
+            
+            console.log('MenSport: ', MenSports)
+            console.log('WomanSport: ', WomanSports)
+            console.log('AllSport: ', AllSports)
+            
+            //Calculate the max number of medals for Sport in Woman and for Mens Sports
+            var maxMenMedals = d3.max(MenSports, function(d){
+                return d3.max(d.values,function(c){
+                    return c.values.bronze_medals + c.values.gold_medals + c.values.silver_medals
+                })
+            })
+            
+            var maxWomanMedals = d3.max(WomanSports, function(d){
+                return d3.max(d.values,function(c){
+                    return c.values.bronze_medals + c.values.gold_medals + c.values.silver_medals
+                })
+            })            
+            
+            console.log('maxMenMedals: ',maxMenMedals)
+            console.log('maxWomanMedals: ', maxWomanMedals)
+            
+            //Scales
+            var ScaleX_Men = d3.scale.linear()
+                .domain([0,maxMenWeight])
+                .range([0, w])
+            
+            var ScaleX_Woman = d3.scale.linear()
+                .domain([0,maxWomanWeight])
+                .range([0, w])
+            
+            var ScaleY_Men = d3.scale.linear()
+                .domain([0,maxMenMedals])
+                .range([0, h])
+            
+            var ScaleY_Woman = d3.scale.linear()
+                .domain([0,maxWomanMedals])
+                .range([0, h])
+            
+            
+            //Function to create a line based on the type of gold_medals
+            var GoldLine_Generator = d3.svg.line()
+                .x(function(d,i){
+                    return ScaleX_Men(d.key)
+                })
+                .y(function(d,i){
+                    return h - ScaleY_Men(d.values.gold_medals)
+                })
+                .interpolate('basis')
+            
+            //Function to create a line based on the type of silver_medals
+            var SilverLine_Generator = d3.svg.line()
+                .x(function(d,i){
+                    return ScaleX_Men(d.key)
+                })
+                .y(function(d,i){
+                    return h - ScaleY_Men(d.values.silver_medals)
+                })
+                .interpolate('basis')
+            
+            //Function to create a line based on the type of medal
+            var BronzeLine_Generator = d3.svg.line()
+                .x(function(d,i){
+                    return ScaleX_Men(d.key)
+                })
+                .y(function(d,i){
+                    return h - ScaleY_Men(d.values.bronze_medals)
+                })
+                .interpolate('basis')
+            
+            //Function to create a line based on totals medals
+            var TotalLine_Generator = d3.svg.line()
+                .x(function(d,i){
+                    return ScaleX_Men(d.key)
+                })
+                .y(function(d,i){
+                    return h - ScaleY_Men(d.values.bronze_medals + d.values.silver_medals + d.values.bronze_medals)
+                })
+                .interpolate('basis')
+                
+            
+            //Create the selector
+            d3.select('body')
+                .append('select')
+                .selectAll('option')
+                .data(AllSports)
+                .enter()
+                .append('option')
+                .text(function(d){
+                    return d.key
+                })
+                .attr('id', function(d,i){
+                    return i
+                })
+            
+            //Interaction for the selector
+            d3.select('select').on('change', function(){
+                
+                var selected_sport_id = d3.select(this).property('selectedIndex')
+                
+                console.log(selected_sport_id)
+        
+                //Remove all previous paths
+                svg.selectAll('path').remove();
+                
+                //Create the graph
+                svg.append('rect')
+                    .attr('width', w)
+                    .attr('height', h)
+                    .style('fill', '#f2f2f2')
+                
+                svg.append('text')
+                    .text(2+maxMenWeight)
+                    .attr('x', w - 20)
+                    .attr('y', h - 8)
+                    .style('fill', 'red')
+                
+                svg.append('path')
+                    .attr('d', GoldLine_Generator(MenSports[selected_sport_id].values))
+                    .style('stroke', 'gold')
+                    .style('fill', 'none')
+
+                svg.append('path')
+                    .attr('d', SilverLine_Generator(MenSports[selected_sport_id].values))
+                    .style('stroke', 'silver')
+                    .style('fill', 'none')
+
+                svg.append('path')
+                    .attr('d', BronzeLine_Generator(MenSports[selected_sport_id].values))
+                    .style('stroke', 'brown')
+                    .style('fill', 'none')
+                
+                svg.append('path')
+                    .attr('d', TotalLine_Generator(MenSports[selected_sport_id].values))
+                    .style('stroke', 'red')
+                    .style('fill', 'none')
+            })       
+            
         })
         
     </script>
