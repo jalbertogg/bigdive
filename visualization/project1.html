@@ -11,6 +11,13 @@
 <body>
     <script>
         
+        function sumMedals(d, key){
+                
+               return d3.sum(d, function(c){
+                   return +c[key]
+               })
+        }
+        
         d3.csv('olympics_2012.csv', function(olympics){
             
             console.log(olympics)
@@ -19,11 +26,19 @@
                 .key(function(d){
                     return d.Sport;
                 })
-                .key(function(d){
+                /*.key(function(d){
                     return d.Event;
+                })*/
+                .rollup(function(d){
+                    return {
+                        gold_medals:sumMedals(d, 'Gold'),
+                        silver_medals:sumMedals(d, 'Silver'),
+                        bronze_medals:sumMedals(d, 'Bronze'),
+                    }
                 })
                 .entries(olympics)
             
+            console.log(sport)
         })
         
     </script>
