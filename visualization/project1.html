@@ -7,10 +7,75 @@
     <meta name="keywords" content="">
     
     <script src="d3.min.js"></script>
+    
+    <style>
+        form > div{
+            margin: 8px;
+            display: inline-block;
+            vertical-align: top;
+        }
+        select, #medals_selector div{
+            margin-top: 4px;
+        }
+        #medals_selector div{
+            display: inline-block;
+            padding: 4px;
+            color: white;
+            border-radius: 4px;
+        }
+        #gold_check_selector{
+            background-color: gold;
+        }
+        #silver_check_selector{
+            background-color: silver;
+        }
+        #bronze_check_selector{
+            background-color: brown;
+        }
+        #total_check_selector{
+            background-color: red;
+        }
+    </style>
 </head>
 <body>
     
-    
+    <form>
+        <div>
+            <label for="sex_selector">Sex:</label>
+            <select id="sex_selector" style="display:block"></select>
+        </div>        
+        
+        <div>
+            <label for="sports_selector">Sport:</label>
+            <select id="sports_selector" style="display:block"></select>
+        </div>
+        
+        <div>
+            <label for="medals_selector">Medals:</label>
+            <div id="medals_selector">
+                <div id="gold_check_selector">
+                    <input type="checkbox" id="gold_check" class="medal_check"></checkbox>
+                    <label for="gold_check">Gold medals</label>
+                </div>
+
+                <div id="silver_check_selector">   
+                    <input type="checkbox" id="silver_check" class="medal_check"></checkbox>
+                    <label for="silver_check">Silver medals</label>
+                </div>
+
+                <div id="bronze_check_selector">
+                    <input type="checkbox" id="bronze_check" class="medal_check"></checkbox>
+                    <label for="bronze_check">Bronze medals</label>
+                </div>
+
+                <div id="total_check_selector">
+                    <input type="checkbox" id="total_check" class="medal_check"></checkbox>
+                    <label for="total_check">Total medals</label>
+                </div>
+            </div>
+        </div>
+    </form>
+        
     <script>
         
         function sumMedals(d, key){
@@ -21,12 +86,15 @@
         
         d3.csv('olympics_2012.csv', function(olympics){
             
-            var h = 600
-            var w = 600
+            var h = 550
+            var w = 1200
             
             var svg = d3.select('body').append('svg')
-                .attr('width', w)
-                .attr('height', h)
+                .attr('width', w + 50)
+                .attr('height', h + 50)
+                .style('margin-top', '20px')
+                .style('float', 'left')
+                .style('clear','both')
             
             console.log(olympics)
             
@@ -124,102 +192,262 @@
             
             
             //Function to create a line based on the type of gold_medals
-            var GoldLine_Generator = d3.svg.line()
+            var GoldArea_Generator = d3.svg.area()
                 .x(function(d,i){
                     return ScaleX_Men(d.key)
                 })
-                .y(function(d,i){
-                    return h - ScaleY_Men(d.values.gold_medals)
+                .y0(function(d,i){
+                    return h - ScaleY_Men(d.values.gold_medals) + 12
                 })
+                .y1(h + 12)
                 .interpolate('basis')
             
             //Function to create a line based on the type of silver_medals
-            var SilverLine_Generator = d3.svg.line()
+            var SilverArea_Generator = d3.svg.area()
                 .x(function(d,i){
                     return ScaleX_Men(d.key)
                 })
-                .y(function(d,i){
-                    return h - ScaleY_Men(d.values.silver_medals)
+                .y0(function(d,i){
+                    return h - ScaleY_Men(d.values.silver_medals) + 12
                 })
+                .y1(h + 12)
                 .interpolate('basis')
             
             //Function to create a line based on the type of medal
-            var BronzeLine_Generator = d3.svg.line()
+            var BronzeArea_Generator = d3.svg.area()
                 .x(function(d,i){
                     return ScaleX_Men(d.key)
                 })
-                .y(function(d,i){
-                    return h - ScaleY_Men(d.values.bronze_medals)
+                .y0(function(d,i){
+                    return h - ScaleY_Men(d.values.bronze_medals) + 12
                 })
+                .y1(h + 12)
                 .interpolate('basis')
             
             //Function to create a line based on totals medals
-            var TotalLine_Generator = d3.svg.line()
+            var TotalArea_Generator = d3.svg.area()
                 .x(function(d,i){
                     return ScaleX_Men(d.key)
                 })
-                .y(function(d,i){
-                    return h - ScaleY_Men(d.values.bronze_medals + d.values.silver_medals + d.values.bronze_medals)
+                .y0(function(d,i){
+                    return h - ScaleY_Men(d.values.gold_medals + d.values.silver_medals + d.values.bronze_medals) + 12
                 })
+                .y1(h + 12)
                 .interpolate('basis')
-                
+                        
             
-            //Create the selector
-            d3.select('body')
-                .append('select')
-                .selectAll('option')
-                .data(AllSports)
-                .enter()
-                .append('option')
-                .text(function(d){
-                    return d.key
-                })
-                .attr('id', function(d,i){
-                    return i
-                })
             
-            //Interaction for the selector
-            d3.select('select').on('change', function(){
-                
-                var selected_sport_id = d3.select(this).property('selectedIndex')
-                
-                console.log(selected_sport_id)
-        
-                //Remove all previous paths
-                svg.selectAll('path').remove();
-                
-                //Create the graph
+            //Create the graph and axis              
                 svg.append('rect')
                     .attr('width', w)
                     .attr('height', h)
                     .style('fill', '#f2f2f2')
+                    .attr('x', 25)
+                    .attr('y', 12)
                 
                 svg.append('text')
-                    .text(2+maxMenWeight)
-                    .attr('x', w - 20)
-                    .attr('y', h - 8)
-                    .style('fill', 'red')
+                    .text('Medals')
+                    .attr('x', 5)
+                    .attr('y', 12)
                 
-                svg.append('path')
-                    .attr('d', GoldLine_Generator(MenSports[selected_sport_id].values))
-                    .style('stroke', 'gold')
-                    .style('fill', 'none')
-
-                svg.append('path')
-                    .attr('d', SilverLine_Generator(MenSports[selected_sport_id].values))
-                    .style('stroke', 'silver')
-                    .style('fill', 'none')
-
-                svg.append('path')
-                    .attr('d', BronzeLine_Generator(MenSports[selected_sport_id].values))
-                    .style('stroke', 'brown')
-                    .style('fill', 'none')
+                svg.append('text')
+                    .text('Kg')
+                    .attr('y', h + 28)
+                    .attr('x', w + 25)
                 
-                svg.append('path')
-                    .attr('d', TotalLine_Generator(MenSports[selected_sport_id].values))
-                    .style('stroke', 'red')
-                    .style('fill', 'none')
-            })       
+                
+            //Update the Axis values
+            function SetAxisValues(maxValue_X, maxValue_Y){
+                    
+                    svg.selectAll('.X_axis').remove();
+                    svg.selectAll('.X_axis')
+                        .data(d3.range(maxValue_X/10))
+                        .enter()
+                        .append('text')
+                        .text(function(d, i){
+                            return d*10
+                        })
+                        .attr('x', function(d, i){
+                            return i * w/(maxValue_X/10) + 25
+                        })
+                        .attr('y', h + 28)
+                        .style('fill', '#2b2b2b')
+                        .attr('class', 'X_axis')
+                    
+                    svg.selectAll('.Y_axis').remove();
+                    svg.selectAll('.Y_axis')
+                        .data(d3.range(maxValue_Y))
+                        .enter()
+                        .append('text')
+                        .text(function(d, i){
+                            return d
+                        })
+                        .attr('x', 5)
+                        .attr('y', function(d, i){
+                            return h - i * h/maxValue_Y
+                        })
+                        .style('fill', '#2b2b2b')
+                        .attr('class', 'Y_axis')
+                    
+            }
+                
+            //Create the selectors options
+            var sex_selector = d3.select('body').select('#sex_selector')
+            
+            sex_selector.append('option')
+                .attr('value', 'Male')
+                .text('Male')
+            
+            sex_selector.append('option')
+                .attr('value', 'Female')
+                .text('Female')
+            
+            var sports_selector = d3.select('body').select('#sports_selector')  
+                        
+                        
+            //Creating the paths         
+            var total_path = svg.append('path')
+                .style('stroke', 'red')
+                .style('fill', 'none')
+                .attr('x', 50)
+            
+            var gold_path = svg.append('path')
+                .style('stroke', 'gold')
+                .style('fill', 'none')
+                .attr('x', 50)
+            
+            var silver_path = svg.append('path')
+                .style('stroke', 'silver')
+                .style('fill', 'none')
+                .attr('x', 50)
+            
+            var bronze_path = svg.append('path')
+                .style('stroke', 'brown')
+                .style('fill', 'none')
+                .attr('x', 50)
+                        
+                        
+            // Function that set the data of paths depending on sport selected
+            function SetPathData(DataSelected){
+                var selected_sport_id = sports_selector.property('selectedIndex')
+                
+                console.log(DataSelected[selected_sport_id].key)
+        
+                //Remove all previous paths
+                //svg.selectAll('path').remove();
+                
+                //Create the graph paths
+                total_path.transition()
+                    .duration(2000)
+                    .attr('d', TotalArea_Generator(DataSelected[selected_sport_id].values))
+                
+                gold_path.transition()
+                    .duration(2000)
+                    .attr('d', GoldArea_Generator(DataSelected[selected_sport_id].values))
+                
+                silver_path.transition()
+                    .duration(2000)
+                    .attr('d', SilverArea_Generator(DataSelected[selected_sport_id].values))
+                
+                bronze_path.transition()
+                    .duration(2000)
+                    .attr('d', BronzeArea_Generator(DataSelected[selected_sport_id].values))
+            }
+            
+            //Function that set the DataSet of Sports by sex
+            function SetDatabySex(){
+                var selected_sex_id = sex_selector.property('selectedIndex')
+                sports_selector.selectAll('option').remove()
+                
+                if (selected_sex_id == 0){
+                    sports_selector.selectAll('option')
+                        .data(MenSports)
+                        .enter()
+                        .append('option')
+                        .attr('value', function(d,i){
+                            return d.key
+                        })
+                        .text(function(d){
+                            return d.key
+                        })
+                    
+                    SetAxisValues(maxMenWeight,maxMenMedals);
+                    
+                    SetPathData(MenSports);
+                    
+                }else if (selected_sex_id == 1){
+                    sports_selector.selectAll('option')
+                        .data(WomanSports)
+                        .enter()
+                        .append('option')
+                        .attr('value', function(d,i){
+                            return d.key
+                        })
+                        .text(function(d){
+                            return d.key
+                        })
+                    
+                    SetAxisValues(maxWomanWeight, maxWomanMedals)
+                    
+                    SetPathData(WomanSports);
+                    
+                }
+            }
+            
+            //Initialize the Data
+            SetDatabySex();
+            
+            //Interaction for the sports selector
+            sports_selector.on('change', function(){
+                var selected_sex_id = sex_selector.property('selectedIndex')
+                
+                if (selected_sex_id == 0){
+                    SetPathData(MenSports);
+                }else if (selected_sex_id == 1){
+                    SetPathData(WomanSports);
+                }
+            })
+            
+            sex_selector.on('change', function(){
+                SetDatabySex();
+            })
+            
+            
+            //Interaction for medals_selector
+            d3.selectAll('.medal_check').on('click', function(){
+                
+                var selected_check = d3.select(this)
+                console.log(selected_check)
+                if(selected_check.property('checked') == true){
+                    if(selected_check.property('id') == 'gold_check'){
+                        gold_path.style('fill','gold')
+                    }
+                    else if(selected_check.property('id') == 'silver_check'){
+                        silver_path.style('fill','silver')
+                    }
+                    else if(selected_check.property('id') == 'bronze_check'){
+                        bronze_path.style('fill','brown')
+                    }
+                    else if(selected_check.property('id') == 'total_check'){
+                        total_path.style('fill','red')
+                    }
+                }
+                else{
+                    if(selected_check.property('id') == 'gold_check'){
+                        gold_path.style('fill','none')
+                    }
+                    else if(selected_check.property('id') == 'silver_check'){
+                        silver_path.style('fill','none')
+                    }
+                    else if(selected_check.property('id') == 'bronze_check'){
+                        bronze_path.style('fill','none')
+                    }
+                    else if(selected_check.property('id') == 'total_check'){
+                        total_path.style('fill','none')
+                    }
+                }
+                
+            })
             
         })
         
