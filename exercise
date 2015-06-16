@@ -1,0 +1,9 @@
+Exercise:
+
+MapReduce
+
+Most freq words with their characters count
+
+5 Chars -> hello -> 8 occurrences
+3 Chars -> cat -> 4 occurrences
+2 Chars -> at -> 3 occurrences
